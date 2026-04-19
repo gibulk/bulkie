@@ -8,9 +8,10 @@ export default function AdminNav() {
   const router = useRouter()
   const pathname = usePathname()
   
-  const handleLogout = () => {
-    localStorage.removeItem('admin_token')
-    router.push('/login')
+  const handleLogout = async () => {
+  localStorage.removeItem('sb-token')
+  await supabase.auth.signOut()
+  router.push('/admin-login.html')
   }
   
   const navItems = [
