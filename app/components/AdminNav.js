@@ -10,7 +10,7 @@ export default function AdminNav() {
   
   const handleLogout = () => {
     localStorage.removeItem('admin_token')
-    router.push('/admin/login')
+    router.push('/login')
   }
   
   const navItems = [
