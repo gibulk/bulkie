@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulkie Admin Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .login-box {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #1a1a2e;
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 32px;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            color: #333;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #1a1a2e;
+        }
+        
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #1a1a2e;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background: #16213e;
+        }
+        
+        button:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+        
+        .error {
+            background: #fee;
+            color: #c00;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .error.show {
+            display: block;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 24px;
+            color: #999;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h1>Bulkie Admin</h1>
+        <p class="subtitle">Login untuk mengelola konten</p>
+        
+        <div id="error" class="error"></div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required placeholder="admin@bulkie.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="••••••••">
+            </div>
+            
+            <button type="submit" id="submitBtn">Login</button>
+        </form>
+        
+        <div id="loading" class="loading">
+            Memproses...
+        </div>
+        
+        <p class="footer">
+            Akses terbatas untuk administrator
+        </p>
+    </div>
+    
+    <script type="module">
+        // GANTI DENGAN URL DAN KEY SUPABASE ANDA!
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL_HERE';
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE';
+        
+        // Import Supabase dari CDN
+        import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+        
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        const form = document.getElementById('loginForm');
+        const errorDiv = document.getElementById('error');
+        const loadingDiv = document.getElementById('loading');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            errorDiv.classList.remove('show');
+            loadingDiv.classList.add('show');
+            submitBtn.disabled = true;
+            
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                if (data.session) {
+                    // Simpan token di localStorage
+                    localStorage.setItem('sb-token', data.session.access_token);
+                    
+                    // Redirect ke dashboard
+                    window.location.href = '/admin/dashboard';
+                }
+            } catch (err) {
+                errorDiv.textContent = err.message || 'Login gagal, coba lagi';
+                errorDiv.classList.add('show');
+            } finally {
+                loadingDiv.classList.remove('show');
+                submitBtn.disabled = false;
+            }
+        });
+        
+        // Cek apakah sudah login
+        (async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                window.location.href = '/admin/dashboard';
+            }
+        })();
+    </script>
+</body>
+</html>
