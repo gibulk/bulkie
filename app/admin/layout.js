@@ -2,9 +2,20 @@
 
 import AdminNav from '../components/AdminNav'
 import { Toaster } from 'react-hot-toast'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function AdminLayout({ children }) {
-  // BYPASS - Tidak ada auth check untuk sementara
+  const router = useRouter()
+  
+  useEffect(() => {
+    // Cek token dari localStorage (disimpan oleh HTML login)
+    const token = localStorage.getItem('sb-token')
+    if (!token) {
+      router.replace('/admin-login.html')
+    }
+  }, [router])
+  
   return (
     <div className="min-h-screen bg-gray-100">
       <AdminNav />
